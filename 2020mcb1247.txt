@@ -1,0 +1,169 @@
+ROHAN KUMAR 
+2020MCB1247 
+
+GitHub link for project: https://github.com/RikudoSennin521/CS522-Project
+
+Contents of submission: 1. code_2020mcb1247.py: Contains the python code for the projects. All required functions are present in this. 
+						2. 2020mcb1247.txt: This is that file. It contains instructions for the code 
+						3. Observations: This is a folder that contains 2 items: 
+										-> result_of_rw: Top 100 visited pages in a random walk for 100 Million Iterations 
+										-> Plot of top 100 pages: This contains a plot of the visits of the top 100 pages. It contains an interesting observation (Power Law)
+
+Files required for the functions to run properly: dump_file (bz2) and graph_file (txt) which will get filled when create_graph function runs. 
+												  Assign the name of the wikidump to the variable dump_file 
+												  Assign the name of the text file in which you want to store your graph to the variable graph_file 
+--------------------------------------------------------------------------------------------------------------------------------------------------
+There are three main tasks that this code accomplishes
+
+1. Reading Webpages from wikidump (bz2) and storing all the pages and their links as an adjacency list in a file (txt)
+2. Reading the text file which contains the adjacency list and making a graph of it in our RAM 
+3. Running a random walk on the graph obtained from step 2
+
+A brief know how of the functions are as follows: 
+
+Utility Functions ---------------------------------------
+
+1. rem_bracket(ss): This function is needed because the links are in the form of [[Rohan]] or [[India]].
+                    This function just removes the brackets from the string ss
+
+2. get_links(node): This function takes the root of an element tree as it's parameter. 
+                    The root represents one webpage 
+                    To obtain the roots of an xml page , we go under the tag revision 
+                    Under the tag revision we go under the tag text. All links are present here 
+                    We use regular expressions to extract all the links 
+                    Then we remove the brackets from the links 
+                    and we return the list of links 
+
+
+
+Important Functions --------------------------------------
+
+1. bz2_to_graph (dump_file, graph_file): dump_file refers the wikidump (bz2)
+                                         graph_file refers to the text file we generate which will have the adjacency list 
+
+                            Functioning: The dump_file is read line by line 
+                                         We track the ending of a page by </page> tag 
+                                         Once a page ends, we write the parent node and all it's links to graph_file 
+                                         The formal is as follows: 
+                                         --- 
+                                         Page Title 
+                                         Link 1
+                                         Link 2 
+                                         Link 3
+                                         ---
+                                         Page Title 
+                                         Link 1 
+                                         Link 2
+                                         ---           ( This signifies end of page)
+
+
+                            This is to help us later on when we read the graph_file and we come across '---' then we know our page has ended 
+				IMPORTANT: 	I ran this function on the entire wikidump(20 GB bz2 file) and the resultant graph is stored on Google Drive 
+							The link of the Google Drive is : https://drive.google.com/file/d/1crFIsNBXPp3lmCG3ng8spuR6nwrPfDa2/view?usp=sharing
+
+
+2. create_graph(graph_file): This function reads the text file (graph_file) and stores the graph as a dictionary in our RAM 
+                             However, if we were to store the graph with strings to represent pages, then the memory limit of our PCs would be reached. 
+                             Hence to optimise memory requirements we do the following: 
+
+                             -> Each Page is assigned a number. This number acts as an ID for this page 
+                             -> The graph dictionary is made using these self made IDs 
+                             -> Utility functions str_to_num and num_to_str help us to find the ID for a page and find the page for an ID respectively 
+                             -> The graph made this way takes much less memory this way. This is because a string has 4 bytes per character whereas an integer has 4 bytes in total 
+								
+							
+                IMPORTANT:   This function returns three items 
+                            1. G: The graph of IDs as a dictionary 
+                            2. page_num: Dictionary which stores the IDs of the pages 
+                            3. num_page: Dictionary which stores the pages of the IDs    
+                            ALL THREE ARE NEEDED FOR THE RANDOM WALK 
+
+3. random_walk(G,page_num,num_page,k): G, page_num and num_page are obtained from the previous function (create_graph)
+                                       k is the number of top results to display after the random walk 
+                            IMPORTANT: Pass the the three parameters obtained from create_graph as well as k 
+
+                                        We run the random walk on the graph G which is in the form of numbers. 
+										Number of steps taken are 10 Million by default, however we can increase this to 1 Billion ( but it will take 20 minutes to run) 
+                                        Then we obtain the numbers corresponding to the top k pages this way and put it in a resut list
+                                        Finally we print the pages corresponding to the numbers of the resultant list along with their steps 
+										
+										
+Observations ----------------------------------------------------------------------------------------
+
+
+Approximately 19 Million pages out of 22.4 Million pages were visited atleast once during the random walk for 100 Million Steps. 
+The 3 Million pages left must be those pages that contain few or zero inlinks. 
+
+Most Interesting Finding----------------------------------
+0. I plotted the frequency of visits to the top 100 pages. You can find this plot in the Observations folder. 
+	I expected that there will be multiple pages with similar frequency of visits at the top. But I got something much more interesting 
+	The plot showed that the graph had a steep slope but became flat later. Hence even at the top , the pages are not uniformly visited. 
+	The plot seems to be of the form y = 1/(x^k) which is characteristic of power law following graphs. 
+	Hence the visits to pages of the WikiGraph follows POWER LAW. This also fits in with the fact that there are many hubs in our WikiGraph. 
+-------------------------------------------------------------
+1. 	result_of_rw.txt contains the top 100 pages after taking a random walk for 100 Million steps on the wikigraph
+	Following were the top 15 pages: 
+	1.	United States:839829
+	2.	The New York Times:719097
+	3.	World War II:513423
+	4.	France:448461
+	5.	India:383526
+	6.	Germany:369755
+	7.	List of sovereign states:367753
+	8.	New York City:363257
+	9.	United Kingdom:339401
+	10.	National Register of Historic Places:334139
+	11.	London:327377
+	12.	The Guardian:313981
+	13.	association football:304516
+	14. Russia:299389
+	15. moth:293060
+
+	We can see that the most important page of Wikipedia is United States. Further we can see that the top 15 pages contain 6 countries. 
+	The reason for this is as follows : All pages are about an institution , a person , an event , a calamity , etc. All of these events are attributed to either one country or multiple countries. 
+	For example: 26/11 Terrorist Attacks will have a link to India as it is the place of the disaster. Statue of Liberty will have links to United States as it is locaated there. 
+	Hence almost all webpages in our wikigraph point to one or more countries. So it is not surprising that countries come out to be the most visited pages in our random walk, 
+	specially the highly populated and eventful countries like United States and India. 
+	
+	We also notice that World War II is at rank 3. This can be attributed to the fact that all the great powers of the world were involved in World War II. 
+	World War II involved more than 100 Million personnel from more than 30 major countries. We already saw that countries are very important nodes. 
+	We can follow from this as all the major countries point to World War II, it comes out to be significantly important as a result. 
+	This leads us to an interesting result: Pages that contain in links from many important pages is also very important. It is akin to a group leader 
+	Similar to World War II we have association football. This contains in links from all footballing countries hence it comes out to be very important as a result 
+	
+	There are two newspapers in our rankings as well, namely New York Times and The Guardian. 
+	Since newspapers report on the important events happening around the world. Then they must be gaining importance as those events reference these newspapers. 
+	These newspapers are the highest items on the list if we ignore countries, lists and World War II, etc 
+	They also happen to be the only pages on the list that are not countries or under any governmental authority. 
+	Hence, these newspapers hold a lot of power to influence poeple , by being important in the wikigraph. 
+
+2. In the random walk for 100 million steps, we visited IIT Ropar 30 times. IIT Bombay was visited 140 times and IIT Delhi was visited 100 times. 
+	
+3. We took a look at the top 15 pages, here is the result when I returned the LEAST FREQUENTLY VISITED PAGES: 
+
+	George VI of England 1
+	Nicky Wilson 1
+	Raja Ki Aayegi Baraat (TV series) 1
+	De Dijk is Dicht 1
+	Jules Verstraete 1
+	Russell Gray 1
+	William Leach (politician) 1
+	Lindau lighthouse 1
+	Pang Puai railway station 1
+	Mueang Lampang District 1
+	Central Australian Aboriginal Women's Choir 1
+	Ntaria Choir 1
+	Toni Steurer 1
+	Damiano Lenzi 1
+	Thooral Ninnu Pochchu 1
+
+	This contains many small personalities and random unheard of locations. We cannot conclude anything after these results.
+
+	
+
+
+
+
+
+
+                              
